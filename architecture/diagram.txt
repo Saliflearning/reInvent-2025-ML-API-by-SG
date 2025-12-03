@@ -1,0 +1,3 @@
+API Gateway → Lambda → SageMaker Endpoint
+      ↓
+   CloudWatch
