@@ -10,12 +10,12 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 
   default_tags {
     tags = {
-      Project = "reInvent-2025-ML-API-by-SG"
-      Owner   = "SG"
+      Project = var.project_name
+      Owner   = var.owner
     }
   }
 }
