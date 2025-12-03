@@ -170,6 +170,6 @@ This upgrade will transform the API from a mock ML service → into a **producti
 ## 👤 **Author**
 
 **(Salif. G)**
-Cloud Engineer • UX Researcher • AI Enthusiast
+Associate Cloud Engineer • UX Researcher • AI Enthusiast
 Built live during **AWS re:Invent 2025**.
 
