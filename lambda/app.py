@@ -1,4 +1,7 @@
 import json
+import os
+# import boto3  # Uncomment when integrating with SageMaker
+
 
 def lambda_handler(event, context):
     """
@@ -8,6 +11,10 @@ def lambda_handler(event, context):
     - Accepts a JSON payload with a "text" field
     - Returns a fake sentiment result (POSITIVE/NEGATIVE)
     - Is structured so we can later plug in a real SageMaker endpoint
+
+    Future plan:
+    - Read the SageMaker endpoint name from the SAGEMAKER_ENDPOINT_NAME environment variable
+    - Use boto3 + SageMaker Runtime to get a true model prediction
     """
 
     try:
@@ -27,7 +34,9 @@ def lambda_handler(event, context):
                 "body": json.dumps({"error": "Missing 'text' field in request body"})
             }
 
-        # --- Placeholder "AI" logic for now ---
+        # --------------------------------------------------------------------
+        # Placeholder "AI" logic for now (simple heuristic sentiment)
+        # --------------------------------------------------------------------
         lowered = text.lower()
         if any(word in lowered for word in ["love", "great", "excited", "amazing", "happy"]):
             sentiment = "POSITIVE"
@@ -35,6 +44,28 @@ def lambda_handler(event, context):
         else:
             sentiment = "NEGATIVE"
             score = 0.65
+
+        # --------------------------------------------------------------------
+        # Future SageMaker Integration (design only for now)
+        #
+        # endpoint_name = os.getenv("SAGEMAKER_ENDPOINT_NAME")
+        #
+        # if endpoint_name:
+        #     runtime = boto3.client("sagemaker-runtime")
+        #     sm_response = runtime.invoke_endpoint(
+        #         EndpointName=endpoint_name,
+        #         ContentType="application/json",
+        #         Body=json.dumps({"text": text})
+        #     )
+        #     result = json.loads(sm_response["Body"].read())
+        #     sentiment = result.get("label", sentiment)
+        #     score = result.get("score", score)
+        #
+        # This makes it easy to switch from mock logic → real ML model
+        # just by:
+        #   1. Deploying a SageMaker endpoint
+        #   2. Setting the SAGEMAKER_ENDPOINT_NAME environment variable
+        # --------------------------------------------------------------------
 
         response = {
             "input_text": text,
