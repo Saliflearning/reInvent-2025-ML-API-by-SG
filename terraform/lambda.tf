@@ -22,8 +22,8 @@ resource "aws_lambda_function" "sentiment_lambda" {
   function_name = "sg-reinvent-sentiment-lambda"
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "app.lambda_handler"
-  runtime       = "python3.10"
+  runtime       = "python3.12"
 
-  filename         = "${path.module}/../lambda/lambda.zip"
-  source_code_hash = filebase64sha256("${path.module}/../lambda/lambda.zip")
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 }
