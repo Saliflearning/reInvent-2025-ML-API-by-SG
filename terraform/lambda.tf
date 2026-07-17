@@ -26,4 +26,11 @@ resource "aws_lambda_function" "sentiment_lambda" {
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  # Environment variables prepared for future SageMaker integration
+  environment {
+    variables = {
+      SAGEMAKER_ENDPOINT_NAME = "sg-reinvent-sentiment-endpoint-placeholder"
+    }
+  }
 }
