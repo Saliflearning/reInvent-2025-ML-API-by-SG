@@ -1,175 +1,123 @@
-# **reInvent-2025-ML-API-by-SG**
+# reInvent 2025 Serverless Sentiment API Lab
 
-AI-powered sentiment analysis API deployed serverlessly using **Terraform**, **AWS Lambda**, and **API Gateway**.
-Built live during **AWS re:Invent 2025** as a hands-on showcase of cloud engineering, IaC, and ML integration.
+This repository is a compact AWS serverless lab built around Terraform, Lambda, API Gateway, IAM, and CloudWatch logging.
 
-## 🚀 **Project Overview**
+It exposes a single `/predict` endpoint backed by a Python Lambda function. The current sentiment logic is intentionally lightweight and deterministic; it is a placeholder seam for a future real model integration rather than a claim of deployed SageMaker inference.
 
-This project exposes a **POST /predict** API endpoint that accepts user text and returns a sentiment-style response.
-The system is fully serverless and designed so the Lambda function can later integrate with a real **SageMaker** model.
+## What this project demonstrates
 
-### Example Request
+- Terraform-driven provisioning for a small AWS API surface
+- Lambda and API Gateway integration
+- scoped IAM setup for execution and invocation
+- automated Lambda packaging through Terraform
+- environment-based preparation for a future SageMaker endpoint
+- basic testability and CI for Python logic and Terraform validation
+
+## Scope honesty
+
+This is not a production ML platform and it does not currently run a real SageMaker model.
+
+Today, the Lambda uses simple keyword heuristics:
+
+- positive keywords return `POSITIVE`
+- everything else currently returns `NEGATIVE`
+
+The project is best understood as:
+
+- a compact AWS, IaC, and serverless engineering lab
+- supporting evidence of cloud engineering fundamentals
+- an extensible foundation for a future model endpoint
+
+## Architecture
+
+```text
+Client
+  ->
+API Gateway HTTP API
+  ->
+AWS Lambda (Python 3.12)
+  ->
+CloudWatch Logs
+```
+
+Terraform provisions:
+
+- Lambda execution role and logging policy
+- HTTP API and Lambda integration
+- API Gateway invoke permission
+- Lambda package generated from `lambda/app.py`
+- placeholder `SAGEMAKER_ENDPOINT_NAME` environment configuration
+
+## Repository layout
+
+```text
+/lambda        Lambda source
+/terraform     AWS infrastructure as code
+/tests         Lambda unit tests and sample payload
+/architecture  lightweight architecture notes
+```
+
+## Local verification
+
+```bash
+python -m unittest discover -s tests -p "test_*.py" -v
+terraform -chdir=terraform fmt -check
+terraform -chdir=terraform init -backend=false
+terraform -chdir=terraform validate
+```
+
+## CI
+
+GitHub Actions runs:
+
+- Lambda unit tests
+- Terraform formatting checks
+- Terraform initialization without a backend
+- Terraform validation
+
+## Packaging
+
+Lambda packaging is automated through Terraform using the `archive_file` provider. Terraform generates `lambda/lambda.zip` from `lambda/app.py`; generated ZIP artifacts should not be committed.
+
+## Deployment
+
+1. Configure AWS credentials locally.
+2. Review the Terraform variables and planned resources.
+3. Initialize and apply:
+
+```bash
+terraform -chdir=terraform init
+terraform -chdir=terraform plan
+terraform -chdir=terraform apply
+```
+
+4. Use the API Gateway output URL to call `POST /predict`.
+
+Example payload:
 
 ```json
 {
-  "text": "I am really excited about AWS re:Invent 2025!"
+  "text": "I love this workshop"
 }
 ```
 
-### Example Response
+## Future SageMaker seam
 
-```json
-{
-  "input_text": "I am really excited about AWS re:Invent 2025!",
-  "label": "POSITIVE",
-  "score": 0.95
-}
-```
+The repository prepares for a future `SAGEMAKER_ENDPOINT_NAME` configuration, but the Lambda does not invoke SageMaker today. A production integration would also require:
 
-> ⚠️ **Note:** The current sentiment result is mock logic inside Lambda.
-> The handler is intentionally structured to be easily replaced by a real **SageMaker inference call** in the next iteration.
+- a deployed model endpoint
+- scoped `sagemaker:InvokeEndpoint` IAM permission
+- `boto3` invocation and response parsing
+- request validation, alarms, throttling, and cost controls
 
----
+## Next improvements
 
-## **Architecture**
+- replace heuristic logic with a real model endpoint
+- add stronger request validation and error envelopes
+- add throttling, alarms, and cost controls
+- add deployment screenshots and sample API responses
+- replace the text architecture summary with a polished visual diagram
 
-```
-Client → API Gateway (HTTP API) → Lambda → (future) SageMaker Endpoint
-                                ↓
-                         CloudWatch Logs
-```
+## License
 
-All resources are created automatically using **Terraform**.
-
----
-
-## **Tech Stack**
-
-| Layer       | Technology                           |
-| ----------- | ------------------------------------ |
-| IaC         | Terraform                            |
-| Compute     | AWS Lambda (Python 3.10)             |
-| API Layer   | API Gateway v2 (HTTP API)            |
-| IAM         | Execution Role, Basic Lambda Logging |
-| Logging     | CloudWatch                           |
-| ML (Future) | Amazon SageMaker Endpoint            |
-
----
-
-## 📦 **Repository Structure**
-
-```
-reInvent-2025-ML-API-by-SG/
-│
-├── architecture/     # Diagrams + future architecture documents
-├── lambda/           # Lambda function code (Python)
-├── terraform/        # Terraform IaC (API Gateway, Lambda, IAM)
-├── tests/            # Example request payloads
-│
-├── README.md
-├── LICENSE
-└── .gitignore
-```
-
----
-
-## ⚙️ **Deployment Guide**
-
-### **1️⃣ Prerequisites**
-
-Make sure you have installed:
-
-* **Terraform** → [https://developer.hashicorp.com/terraform/install](https://developer.hashicorp.com/terraform/install)
-* **AWS CLI** → [https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
-Configure AWS credentials:
-
-```bash
-aws configure
-```
-
-IAM user should have permissions for:
-
-* Lambda
-* API Gateway
-* IAM
-* CloudWatch
-
----
-
-## **2️⃣ Clone the repository**
-
-```bash
-git clone https://github.com/Saliflearning/reInvent-2025-ML-API-by-SG.git
-cd reInvent-2025-ML-API-by-SG
-```
-
-
-## **3️⃣ Package the Lambda function**
-
-From **PowerShell**:
-
-```powershell
-cd .\lambda\
-Compress-Archive -Path app.py -DestinationPath lambda.zip -Force
-cd ..\terraform\
-```
-
-
-## **4️⃣ Deploy with Terraform**
-
-```powershell
-terraform init
-terraform plan
-terraform apply
-```
-
-Type **yes** to confirm.
-
-Terraform will output:
-
-api_invoke_url = "https://xxxxx.execute-api.us-east-1.amazonaws.com"
-lambda_function_name = "sg-reinvent-sentiment-lambda"
-```
-
-## **Testing the API**
-
-Replace `YOUR_API_URL` with the URL from Terraform.
-
-```powershell
-(Invoke-WebRequest -Uri "https://YOUR_API_URL/predict" `
-  -Method POST `
-  -Headers @{ "Content-Type" = "application/json" } `
-  -Body '{"text": "I am really excited about AWS re:Invent 2025!"}'
-).Content
-```
-
-Expected output:
-
-```json
-{"input_text": "...", "label": "POSITIVE", "score": 0.95}
-```
-
-## 🔮 **Future Enhancement — SageMaker Integration**
-
-The Lambda handler (`lambda/app.py`) is already structured to allow:
-
-* Injecting a SageMaker endpoint name via env variables
-* Using `boto3` to call the SageMaker Runtime API
-* Returning real model predictions
-
-Planned next steps:
-
-* Deploy HuggingFace or AWS-provided sentiment model via SageMaker
-* Add CloudWatch metrics (latency, model time, error rates)
-* Add request logging to DynamoDB or S3
-
-This upgrade will transform the API from a mock ML service → into a **production-ready inference pipeline**.
-
-
-## 👤 **Author**
-
-**(Salif. G)**
-Associate Cloud Engineer • UX Researcher • AI Enthusiast
-Built live during **AWS re:Invent 2025**.
-
+MIT
