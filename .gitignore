@@ -42,3 +42,23 @@ __pycache__/
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Local environment and tooling
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Internal AI/specification context (never public)
+.agents/
+.claude/
+.specify/
+specs/
+graphify-out/
+AGENTS.md
+CLAUDE.md
