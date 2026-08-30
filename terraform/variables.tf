@@ -7,12 +7,12 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name tag"
   type        = string
-  default     = "reInvent-2025-ML-API-by-SG"
+  default     = "aws-serverless-sentiment-lab"
 }
 
 variable "owner" {
-  description = "Owner tag used for resource tagging"
+  description = "Generic portfolio owner tag used for resource grouping"
   type        = string
-  default     = "SG"
+  default     = "portfolio-lab"
 }
 
